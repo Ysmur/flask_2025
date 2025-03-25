@@ -3,6 +3,7 @@ from data import db_session
 from data.users import User
 from data.jobs import Jobs
 from forms.user import RegisterForm, LoginForm
+from forms.jobs import JobsForm
 from flask_login import LoginManager, login_user, logout_user, login_required
 import datetime
 
@@ -64,6 +65,23 @@ def login():
                                message="Неправильный логин или пароль",
                                form=form)
     return render_template('login.html', title='Авторизация', form=form)
+
+@app.route('/addjob', methods=['GET', 'POST'])
+@login_required
+def addjob():
+    form = JobsForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        job = Jobs()
+        job.job = form.job.data
+        job.team_leader = form.leader.data
+        job.work_size = form.work_size.data
+        job.collaborators = form.collaborators.data
+        job.is_finished = form.is_finish.data
+        db_sess.add(job)
+        db_sess.commit()
+        return redirect("/")
+    return render_template('addjob.html', title='Добавление работы', form=form)
 
 @app.route('/logout')
 @login_required
